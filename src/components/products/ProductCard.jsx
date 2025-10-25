@@ -42,7 +42,7 @@ const ProductCard = ({ product, isSlideshow = false }) => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               className="hidden">
-              Added
+              Item Added
             </motion.div>
           )}
           
@@ -116,7 +116,7 @@ const ProductCard = ({ product, isSlideshow = false }) => {
                       className="block absolute inset-0"
                       style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
                     >
-                      Added
+                      Item Added
                     </span>
                   </motion.div>
                 </div>

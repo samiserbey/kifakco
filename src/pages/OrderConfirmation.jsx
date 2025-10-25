@@ -73,7 +73,7 @@ export default function OrderConfirmation() {
           
           <div className="mt-10">
             <Link to={createPageUrl("Products")}>
-              <Button size="lg" className="bg-brand-primary hover:bg-brand-primary/90 text-white rounded-full px-10 py-7 text-xl font-bold shadow-lg shadow-brand-primary/30 transition-all hover:shadow-xl hover:shadow-brand-primary/40">
+              <Button size="lg" className="bg-black hover:bg-black/90 text-white rounded-full px-10 py-7 text-xl font-bold shadow-lg transition-all hover:shadow-xl">
                 <ShoppingBag className="mr-3 w-6 h-6" />
                 Continue Shopping
               </Button>

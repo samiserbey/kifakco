@@ -161,7 +161,7 @@ export default function ProductDetail() {
                           key={size} 
                           variant={selectedSize === size ? "default" : "outline"} 
                           onClick={() => setSelectedSize(size)} 
-                          className={`px-8 py-6 text-xl font-black transition-all transform hover:scale-105 uppercase tracking-wider font-display ${selectedSize === size ? 'bg-brand-primary text-white border-2 border-brand-primary' : 'bg-white border-2 border-brand-primary hover:border-brand-accent'}`}
+                          className={`px-8 py-6 text-xl font-black transition-all transform hover:scale-105 uppercase tracking-wider font-display ${selectedSize === size ? 'bg-black text-white border-2 border-black' : 'bg-white border-2 border-brand-primary hover:border-brand-accent'}`}
                         >
                           {size}
                         </Button>
@@ -171,7 +171,7 @@ export default function ProductDetail() {
                 )}
                 
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mt-auto pt-6">
-                  <Button size="lg" className="flex-1 bg-brand-accent hover:bg-brand-accent/90 border-2 border-brand-primary h-16 text-xl font-black uppercase tracking-wider font-display shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all" onClick={handleAddToCart}>
+                  <Button size="lg" className="flex-1 bg-black hover:bg-black/90 border-2 border-brand-primary h-16 text-xl font-black uppercase tracking-wider font-display shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all" onClick={handleAddToCart}>
                     <ShoppingCart className="w-6 h-6 mr-3" />
                     ADD TO BAG
                   </Button>

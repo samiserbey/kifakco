@@ -56,18 +56,17 @@ export default function Home() {
         <div className="absolute bottom-0 left-0 w-32 h-2 bg-brand-accent"></div>
         <div className="absolute bottom-0 right-0 w-32 h-2 bg-brand-accent"></div>
         
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32 text-center relative z-10">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-24 lg:pb-32 text-center relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}>
 
             <motion.div 
-              className="inline-block bg-black text-white px-8 py-3 mb-6 border-2 border-brand-dark-surface font-black text-sm uppercase tracking-wider transform -rotate-2 shadow-xl"
-              whileHover={{ rotate: 0, scale: 1.05 }}
+              className="inline-block bg-black text-white px-[2.1rem] py-[0.79rem] mb-6 border-2 border-brand-dark-surface font-black text-[0.92rem] uppercase tracking-wider transform -rotate-2 shadow-xl"
               transition={{ type: "spring", stiffness: 400 }}
             >
-              LEBANESE STREETWEAR
+              LEBANESE GIFT ITEMS
             </motion.div>
 
             <motion.img
@@ -82,7 +81,7 @@ export default function Home() {
 
             <h1 className="text-7xl md:text-9xl font-black text-black font-display uppercase tracking-tight leading-none mb-6 stencil-text">
               GIFTS WITH
-              <span className="block text-brand-accent mt-2 transform -rotate-1 inline-block">AN ACCENT</span>
+              <span className="block text-brand-accent mt-2 transform -rotate-2 scale-105 md:scale-110">AN ACCENT</span>
             </h1>
             
             <p className="mt-6 text-xl md:text-2xl text-black max-w-3xl mx-auto font-bold leading-relaxed">

@@ -67,12 +67,11 @@ export default function Checkout() {
   }, 0);
   const numberOfBundles = Math.floor(bundleItemCount / 4);
   const bundleDiscount = numberOfBundles * 10;
-  const standardDiscount = subtotal >= 20 ? subtotal * 0.20 : 0;
-  const finalDiscount = Math.max(standardDiscount, bundleDiscount);
-  let discountLabel = "Discount (20%)";
-  if (bundleDiscount > standardDiscount) { discountLabel = `Bundle Deal (${numberOfBundles}x)`; }
+  const finalDiscount = bundleDiscount;
+  let discountLabel = "";
+  if (bundleDiscount > 0) { discountLabel = `Bundle Deal (${numberOfBundles}x)`; }
 
-  const shippingCost = 5;
+  const shippingCost = subtotal >= 50 ? 0 : 5;
   const total = subtotal - finalDiscount + shippingCost;
   
   const handleSubmit = async (e) => {

@@ -91,24 +91,18 @@ export default function Cart() {
   const numberOfBundles = Math.floor(bundleItemCount / 4);
   const bundleDiscount = numberOfBundles * 10; // $32 (4 * $8) - $22 = $10 discount per bundle
 
-  // Standard Discount Logic
-  const standardDiscountThreshold = 20; // Renamed for clarity
-  const standardDiscount = subtotal >= standardDiscountThreshold ? subtotal * 0.20 : 0;
+  // Apply only the bundle discount
+  const finalDiscount = bundleDiscount;
 
-  // Apply the BEST discount for the customer
-  const finalDiscount = Math.max(standardDiscount, bundleDiscount);
-
-  let discountLabel = "Discount (20%)";
-  if (bundleDiscount > 0 && bundleDiscount >= standardDiscount) {
+  let discountLabel = "";
+  if (bundleDiscount > 0) {
     discountLabel = `Bundle Deal (${numberOfBundles}x)`;
-  } else if (standardDiscount > 0) {
-    discountLabel = "Discount (20%)";
   }
 
-  const shippingCost = 5; // You can adjust this
+  const shippingCost = subtotal >= 50 ? 0 : 5;
   const total = subtotal - finalDiscount + shippingCost;
 
-  const amountToDiscount = standardDiscountThreshold - subtotal; // This remains for the standard discount message
+  // Removed 20% discount threshold messaging
 
   if (isLoading) {
     return <LoadingSpinner />;
@@ -142,12 +136,7 @@ export default function Cart() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
               <div className="lg:col-span-2 space-y-4">
-                {subtotal > 0 && subtotal < standardDiscountThreshold && finalDiscount === 0 &&
-              <div className="bg-brand-accent/10 border-l-4 border-brand-accent text-brand-text p-4 rounded-lg mb-4 flex items-center gap-4">
-                    <BadgePercent className="w-6 h-6 text-brand-accent" />
-                    <p className="font-semibold">You're only ${amountToDiscount.toFixed(2)} away from a 20% discount!</p>
-                  </div>
-              }
+              {/* Removed 20% discount upsell banner */}
                  {finalDiscount > 0 &&
               <div className="bg-brand-primary/10 border-l-4 border-brand-primary text-brand-text p-4 rounded-lg mb-4 flex items-center gap-4">
                     <BadgePercent className="w-6 h-6 text-brand-primary" />
