@@ -11,6 +11,7 @@ import { createPageUrl } from "@/utils";
 import { User } from "@/api/entities";
 import { motion } from "framer-motion";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
+import imageMap from "@/data/imageMap.json";
 
 export default function Cart() {
   const [cartItems, setCartItems] = useState([]);
@@ -113,7 +114,7 @@ export default function Cart() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
           <div className="mb-8 flex items-center justify-between">
-            <h1 className="text-4xl font-black text-brand-text font-display uppercase tracking-tighter">Your Goodie Bag</h1>
+            <h1 className="text-4xl font-black text-brand-text font-display uppercase tracking-tighter">Your Goodie Cart</h1>
             <Link to={createPageUrl("Products")}>
               <Button variant="outline" className="border-brand-primary text-brand-primary hover:bg-brand-primary/10 rounded-full font-bold">
                 <ArrowLeft className="w-4 h-4 mr-2" />
@@ -124,8 +125,8 @@ export default function Cart() {
 
           {cartItems.length === 0 ?
           <div className="text-center py-24 bg-brand-surface rounded-2xl shadow-lg border border-gray-200">
-              <ShoppingBag className="w-20 h-20 text-gray-300 mx-auto mb-6" />
-              <h2 className="text-3xl font-bold text-brand-text mb-2">Your bag is empty!</h2>
+              <ShoppingBag className="w-20 h-20 text-black-300 mx-auto mb-6" />
+              <h2 className="text-3xl font-bold text-brand-text mb-2">Your cart is empty!</h2>
               <p className="text-gray-500 mb-8 text-lg">Let's find a gift that will make someone's day.</p>
               <Link to={createPageUrl("Products")}>
                 <Button className="bg-black hover:bg-black/90 rounded-full px-8 py-6 text-lg font-bold border-2 border-brand-primary">
@@ -150,7 +151,7 @@ export default function Cart() {
                   <Card key={item.id} className="bg-brand-surface border-gray-200 rounded-2xl shadow-md overflow-hidden">
                       <CardContent className="p-4 flex items-center space-x-6">
                         <img
-                        src={`${product.image_url}?transform=w_200,h_200,c_cover,q_75`}
+                        src={`${(imageMap[product.id]?.main) || `${product.image_url}?transform=w_200,h_200,c_cover,q_75`}`}
                         alt={product.name}
                         className="w-28 h-28 object-cover rounded-lg"
                         loading="lazy"

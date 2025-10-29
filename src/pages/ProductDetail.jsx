@@ -13,6 +13,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { motion } from "framer-motion";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
+import imageMap from "@/data/imageMap.json";
 
 export default function ProductDetail() {
   const [product, setProduct] = useState(null);
@@ -59,14 +60,20 @@ export default function ProductDetail() {
       if (existingItemIndex > -1) {
           guestCart[existingItemIndex].quantity += 1;
       } else {
-          guestCart.push({ product_id: product.id, quantity: 1, size: selectedSize, name: product.name, price: product.price, image_url: product.image_url });
+          guestCart.push({ product_id: product.id, quantity: 1, size: selectedSize, name: product.name, price: product.price, image_url: imageMap[product.id]?.main || product.image_url });
       }
       localStorage.setItem('guestCart', JSON.stringify(guestCart));
     }
     window.location.href = createPageUrl("Cart");
   };
 
-  const productImages = product?.image_gallery?.length > 0 ? product.image_gallery : (product?.image_url ? [product.image_url] : []);
+  const mapped = product ? imageMap[product.id] : undefined;
+  const productImages = mapped?.gallery && mapped.gallery.length > 0
+    ? mapped.gallery
+    : (product?.image_gallery?.length > 0 ? product.image_gallery : (product?.image_url ? [product.image_url] : []));
+
+  const withTransform = (url, transformParams) =>
+    url && url.startsWith('/products/') ? url : `${url}?transform=${transformParams}`;
 
   if (isLoading) {
     return <LoadingSpinner />;
@@ -103,7 +110,7 @@ export default function ProductDetail() {
               <motion.div initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
                 <div className="overflow-hidden shadow-2xl bg-white p-8 border-4 border-brand-primary">
                   <img 
-                    src={`${productImages[selectedImage]}?transform=w_800,q_90`} 
+                    src={withTransform(productImages[selectedImage], 'w_800,q_90')} 
                     alt={product.name} 
                     className="w-full h-96 lg:h-[600px] object-contain" 
                     loading="eager"
@@ -116,7 +123,7 @@ export default function ProductDetail() {
                     {productImages.map((img, i) => (
                       <button key={i} onClick={() => setSelectedImage(i)} className={`w-24 h-24 overflow-hidden border-4 transition-all transform hover:scale-105 ${selectedImage === i ? 'border-brand-accent shadow-lg' : 'border-brand-primary hover:border-brand-secondary'}`}>
                         <img 
-                          src={`${img}?transform=w_150,h_150,q_80`} 
+                          src={withTransform(img, 'w_150,h_150,q_80')} 
                           alt={`${product.name} ${i + 1}`} 
                           className="w-full h-full object-contain bg-white p-2" 
                           loading="lazy"
@@ -173,7 +180,7 @@ export default function ProductDetail() {
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mt-auto pt-6">
                   <Button size="lg" className="flex-1 bg-black hover:bg-black/90 border-2 border-brand-primary h-16 text-xl font-black uppercase tracking-wider font-display shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all" onClick={handleAddToCart}>
                     <ShoppingCart className="w-6 h-6 mr-3" />
-                    ADD TO BAG
+                    ADD TO CART
                   </Button>
                 </div>
               </motion.div>

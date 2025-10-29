@@ -4,6 +4,9 @@ import { createPageUrl } from '@/utils';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { CartItem, User } from '@/api/entities';
+import imageMap from '@/data/imageMap.json';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 
 const ProductCard = ({ product, isSlideshow = false }) => {
   if (!product) return null;
@@ -14,6 +17,36 @@ const ProductCard = ({ product, isSlideshow = false }) => {
   };
 
   const [added, setAdded] = React.useState(false);
+  const [isSizeDialogOpen, setIsSizeDialogOpen] = React.useState(false);
+  const [pendingAddToCart, setPendingAddToCart] = React.useState(false);
+  const [selectedSize, setSelectedSize] = React.useState(null);
+
+  const hasSizes = Array.isArray(product.sizes) && product.sizes.length > 0;
+
+  async function addToCart(chosenSize) {
+    try {
+      const user = await User.me();
+      const filter = { user_email: user.email, product_id: product.id, ...(chosenSize && { size: chosenSize }) };
+      const existing = await CartItem.filter(filter);
+      if (existing.length > 0) {
+        await CartItem.update(existing[0].id, { quantity: existing[0].quantity + 1 });
+      } else {
+        await CartItem.create({ product_id: product.id, quantity: 1, user_email: user.email, ...(chosenSize && { size: chosenSize }) });
+      }
+    } catch (error) {
+      const guestCart = JSON.parse(localStorage.getItem('guestCart') || '[]');
+      const existingIndex = guestCart.findIndex(item => item.product_id === product.id && (item.size === chosenSize || (!item.size && !chosenSize)));
+      if (existingIndex > -1) {
+        guestCart[existingIndex].quantity += 1;
+      } else {
+        guestCart.push({ product_id: product.id, quantity: 1, size: chosenSize, name: product.name, price: product.price, image_url: imageMap[product.id]?.main || product.image_url });
+      }
+      localStorage.setItem('guestCart', JSON.stringify(guestCart));
+    }
+    window.dispatchEvent(new Event('cartUpdated'));
+    setAdded(true);
+    setTimeout(() => setAdded(false), 2000);
+  }
 
   return (
     <motion.div
@@ -51,7 +84,7 @@ const ProductCard = ({ product, isSlideshow = false }) => {
             <div className="absolute bottom-0 right-0 w-16 h-16 border-r-2 border-b-2 border-gray-200 opacity-50"></div>
             
             <img 
-              src={`${product.image_url}?transform=w_400,h_400,q_85`} 
+              src={`${(imageMap[product.id]?.main) || `${product.image_url}?transform=w_400,h_400,q_85`}`} 
               alt={product.name} 
               className="w-full h-72 object-contain transition-transform duration-500 group-hover:scale-110" 
               loading="lazy"
@@ -72,29 +105,11 @@ const ProductCard = ({ product, isSlideshow = false }) => {
                 onClick={async (e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  const chosenSize = Array.isArray(product.sizes) && product.sizes.length > 0 ? product.sizes[0] : undefined;
-                  try {
-                    const user = await User.me();
-                    const filter = { user_email: user.email, product_id: product.id, ...(chosenSize && { size: chosenSize }) };
-                    const existing = await CartItem.filter(filter);
-                    if (existing.length > 0) {
-                      await CartItem.update(existing[0].id, { quantity: existing[0].quantity + 1 });
-                    } else {
-                      await CartItem.create({ product_id: product.id, quantity: 1, user_email: user.email, ...(chosenSize && { size: chosenSize }) });
-                    }
-                  } catch (error) {
-                    const guestCart = JSON.parse(localStorage.getItem('guestCart') || '[]');
-                    const existingIndex = guestCart.findIndex(item => item.product_id === product.id && (item.size === chosenSize || (!item.size && !chosenSize)));
-                    if (existingIndex > -1) {
-                      guestCart[existingIndex].quantity += 1;
-                    } else {
-                      guestCart.push({ product_id: product.id, quantity: 1, size: chosenSize, name: product.name, price: product.price, image_url: product.image_url });
-                    }
-                    localStorage.setItem('guestCart', JSON.stringify(guestCart));
+                  if (hasSizes) {
+                    setIsSizeDialogOpen(true);
+                    return;
                   }
-                  window.dispatchEvent(new Event('cartUpdated'));
-                  setAdded(true);
-                  setTimeout(() => setAdded(false), 2000);
+                  addToCart(undefined);
                 }}
                 className="bg-black hover:bg-black/90 text-white border-2 border-brand-primary px-4 py-2 text-xs font-black uppercase tracking-wider transform -rotate-3 relative overflow-hidden"
               >
@@ -125,6 +140,46 @@ const ProductCard = ({ product, isSlideshow = false }) => {
           </div>
         </div>
       </Link>
+
+      {hasSizes && (
+        <Dialog open={isSizeDialogOpen} onOpenChange={setIsSizeDialogOpen}>
+          <DialogContent className="border-4 border-brand-primary">
+            <DialogHeader>
+              <DialogTitle className="font-display uppercase">Select Size</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <Label className="font-bold">Available sizes</Label>
+              <div className="flex flex-wrap gap-2">
+                {product.sizes.map((size) => (
+                  <Button
+                    key={size}
+                    variant={selectedSize === size ? 'default' : 'outline'}
+                    onClick={() => setSelectedSize(size)}
+                    className={`px-6 ${selectedSize === size ? 'bg-black text-white border-2 border-black' : 'bg-white border-2 border-brand-primary hover:border-brand-accent'}`}
+                  >
+                    {size}
+                  </Button>
+                ))}
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                disabled={!selectedSize || pendingAddToCart}
+                onClick={async () => {
+                  setPendingAddToCart(true);
+                  await addToCart(selectedSize);
+                  setPendingAddToCart(false);
+                  setIsSizeDialogOpen(false);
+                  setSelectedSize(null);
+                }}
+                className="bg-black text-white border-2 border-brand-primary"
+              >
+                Add to Cart
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </motion.div>
   );
 };

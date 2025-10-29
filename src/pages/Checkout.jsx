@@ -4,7 +4,7 @@ import { Product } from "@/api/entities";
 import { Order } from "@/api/entities";
 import { CartItem } from "@/api/entities";
 import { User } from "@/api/entities";
-import { SendEmail } from "@/api/integrations";
+import { createClient } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,12 @@ import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import { motion } from "framer-motion";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
+
+// Prefer env vars; set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your environment
+const supabase = createClient(
+  'https://kbgdwdaymwykzkzorjbb.supabase.co/functions/v1/kifakco-order-confirmation',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtiZ2R3ZGF5bXd5a3prem9yamJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE1ODc2NTIsImV4cCI6MjA3NzE2MzY1Mn0.pKWuAvH_94LTg1ca3jPe22pZ5V02K3Xro4QKjTwIlEk'
+);
 
 export default function Checkout() {
   const [cartItems, setCartItems] = useState([]);
@@ -117,56 +123,21 @@ export default function Checkout() {
       const order = await Order.create(orderData);
       
       try {
-        const emailBody = `
-          <div style="font-family: sans-serif; padding: 20px; color: #333; background-color: #f9f9f9; border-radius: 8px;">
-            <h1 style="color: #7c3aed; text-align: center; margin-bottom: 25px;">New Order from Kifak Co!</h1>
-            <p style="font-size: 16px; line-height: 1.5;">You've received a new order. Here are the details:</p>
-            
-            <div style="background-color: #ffffff; padding: 20px; border-radius: 8px; border: 1px solid #e0e0e0; margin-top: 20px;">
-              <h2 style="border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; color: #333;">Order #${order.id.substring(0, 8)}</h2>
-              
-              <h3 style="color: #4a4a4a; margin-top: 20px;">Customer Details</h3>
-              <p style="margin: 5px 0;"><strong>Name:</strong> ${order.customer_name}</p>
-              <p style="margin: 5px 0;"><strong>Email:</strong> ${order.user_email}</p>
-              <p style="margin: 5px 0;"><strong>Phone:</strong> ${order.phone_number}</p>
-              
-              <h3 style="color: #4a4a4a; margin-top: 20px;">Shipping Address</h3>
-              <p style="margin: 5px 0;">${order.shipping_address.street}, ${order.shipping_address.building}, Floor ${order.shipping_address.floor || 'N/A'}</p>
-              <p style="margin: 5px 0;">${order.shipping_address.city}, ${order.shipping_address.country}</p>
-              ${order.shipping_address.zip_code ? `<p style="margin: 5px 0;">Zip Code: ${order.shipping_address.zip_code}</p>` : ''}
-
-              <h3 style="color: #4a4a4a; margin-top: 20px;">Order Items</h3>
-              <table style="width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px;">
-                <thead>
-                  <tr style="background-color: #f0f0f0;">
-                    <th style="padding: 12px; text-align: left; border: 1px solid #e0e0e0;">Product</th>
-                    <th style="padding: 12px; text-align: left; border: 1px solid #e0e0e0;">Size</th>
-                    <th style="padding: 12px; text-align: center; border: 1px solid #e0e0e0;">Qty</th>
-                    <th style="padding: 12px; text-align: right; border: 1px solid #e0e0e0;">Price</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${order.items.map(item => `
-                    <tr style="border-bottom: 1px solid #eee;">
-                      <td style="padding: 10px; border: 1px solid #e0e0e0;">${item.product_name}</td>
-                      <td style="padding: 10px; border: 1px solid #e0e0e0;">${item.size || 'N/A'}</td>
-                      <td style="padding: 10px; text-align: center; border: 1px solid #e0e0e0;">${item.quantity}</td>
-                      <td style="padding: 10px; text-align: right; border: 1px solid #e0e0e0;">$${(item.price_at_purchase * item.quantity).toFixed(2)}</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-              <div style="text-align: right; margin-top: 20px; font-size: 16px;">
-                <p style="margin: 5px 0;">Subtotal: <strong>$${subtotal.toFixed(2)}</strong></p>
-                ${finalDiscount > 0 ? `<p style="margin: 5px 0; color: #db2777;">Discount: <strong>-$${finalDiscount.toFixed(2)}</strong></p>` : ''}
-                <p style="margin: 5px 0;">Shipping: <strong>$${shippingCost.toFixed(2)}</strong></p>
-                <h2 style="margin: 15px 0 0; color: #7c3aed;">Total: <strong>$${total.toFixed(2)}</strong></h2>
-              </div>
-            </div>
-            <p style="font-size: 14px; color: #666; text-align: center; margin-top: 30px;">Thank you for your business!</p>
-          </div>
-        `;
-        await SendEmail({ to: "rabihhibri00@gmail.com", subject: `New Kifak Co. Order #${order.id.substring(0,8)} from ${fullName}`, body: emailBody });
+        const { data, error } = await supabase.functions.invoke('kifakco-order-confirmation', {
+          body: {
+            id: order.id,
+            customer_name: order.customer_name,
+            user_email: order.user_email,
+            phone_number: order.phone_number,
+            shipping_address: order.shipping_address,
+            items: order.items,
+            subtotal,
+            shipping_cost: shippingCost,
+            discount_amount: finalDiscount,
+            total_amount: total
+          }
+        });
+        if (error) { console.error("Supabase function error:", error); }
       } catch (emailError) { console.error("Email notification failed, but order was created successfully:", emailError); }
 
       // Clear cart
